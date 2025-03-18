@@ -15,6 +15,14 @@ func weatherErrorHandler() (string, error){
 	resp , err := http.Get("http://localhost:8080");
 
 	if err!=nil {
+		
+		if os.IsTimeout(err){
+			return "",fmt.Errorf("request timed out")
+		}
+		if err == io.EOF {
+			return "", fmt.Errorf("connection terminated unexpectedly")
+		}
+
 		return "", fmt.Errorf("failed to fetch server: %v", err)
 	}
 
@@ -25,6 +33,9 @@ func weatherErrorHandler() (string, error){
 
 		if retryAfter == "" {
 			fmt.Println("server is too busy, automatically retries after 2 seconds...")
+
+			// 2 seconds is a good choice because it's short enough to minimize user delay while still giving the server a
+			//  brief moment to recover, avoiding overloading it with frequent requests.
 			time.Sleep(2 * time.Second)
 			return weatherErrorHandler()
 		} else {
