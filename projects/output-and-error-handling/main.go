@@ -10,7 +10,7 @@ import (
 )
 
 
-func weatherErrorHandler() (string, error){
+func handleWeatherRequest() (string, error){
 
 	resp , err := http.Get("http://localhost:8080");
 
@@ -37,13 +37,13 @@ func weatherErrorHandler() (string, error){
 			// 2 seconds is a good choice because it's short enough to minimize user delay while still giving the server a
 			//  brief moment to recover, avoiding overloading it with frequent requests.
 			time.Sleep(2 * time.Second)
-			return weatherErrorHandler()
+			return handleWeatherRequest()
 		} else {
 			retryAfterInSecond, err := strconv.Atoi(retryAfter)
 			if err != nil {
 				fmt.Println("Retry-After header is invalid, automatically retries after 2 seconds...")
 				time.Sleep(2 * time.Second)
-				return weatherErrorHandler()
+				return handleWeatherRequest()
 			}
 
 			if retryAfterInSecond > 5 {
@@ -51,7 +51,7 @@ func weatherErrorHandler() (string, error){
 			} else if retryAfterInSecond >= 1 && retryAfterInSecond <= 5 {
 				fmt.Printf("Waiting for %d seconds...\n", retryAfterInSecond)
 				time.Sleep(time.Duration(retryAfterInSecond) * time.Second)
-				return weatherErrorHandler()
+				return handleWeatherRequest()
 			}
 		}
 
@@ -69,7 +69,7 @@ func weatherErrorHandler() (string, error){
 }
 
 func main(){
-	_,err:=weatherErrorHandler();
+	_,err:=handleWeatherRequest();
 	if err!=nil {
 		fmt.Println("error happened: " , err)
 		os.Exit(1);
