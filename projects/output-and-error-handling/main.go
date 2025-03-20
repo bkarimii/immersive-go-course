@@ -9,15 +9,14 @@ import (
 	"time"
 )
 
+func handleWeatherRequest() (string, error) {
 
-func handleWeatherRequest() (string, error){
+	resp, err := http.Get("http://localhost:8080")
 
-	resp , err := http.Get("http://localhost:8080");
+	if err != nil {
 
-	if err!=nil {
-		
-		if os.IsTimeout(err){
-			return "",fmt.Errorf("request timed out")
+		if os.IsTimeout(err) {
+			return "", fmt.Errorf("request timed out")
 		}
 		if err == io.EOF {
 			return "", fmt.Errorf("connection terminated unexpectedly")
@@ -26,8 +25,8 @@ func handleWeatherRequest() (string, error){
 		return "", fmt.Errorf("failed to fetch server: %v", err)
 	}
 
-	defer resp.Body.Close();
-	
+	defer resp.Body.Close()
+
 	if resp.StatusCode == http.StatusTooManyRequests {
 		retryAfter := resp.Header.Get("Retry-After")
 
@@ -55,24 +54,24 @@ func handleWeatherRequest() (string, error){
 			}
 		}
 
-	}else if resp.StatusCode==http.StatusOK{
-		body , err :=io.ReadAll(resp.Body)
-		if err!=nil{
-			return "" , fmt.Errorf("couldn't read the body response: %w",err)
+	} else if resp.StatusCode == http.StatusOK {
+		body, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return "", fmt.Errorf("couldn't read the body response: %w", err)
 		}
-		fmt.Printf("%s" , body)
-		return string(body) ,nil
-	}else{
-		return "" , fmt.Errorf("unkown status code:  %d . ",resp.StatusCode)
+		fmt.Printf("%s", body)
+		return string(body), nil
+	} else {
+		return "", fmt.Errorf("unkown status code:  %d . ", resp.StatusCode)
 	}
-	return "" , fmt.Errorf("unexpected error happened")
+	return "", fmt.Errorf("unexpected error happened")
 }
 
-func main(){
-	_,err:=handleWeatherRequest();
-	if err!=nil {
-		fmt.Println("error happened: " , err)
-		os.Exit(1);
+func main() {
+	_, err := handleWeatherRequest()
+	if err != nil {
+		fmt.Println("error happened: ", err)
+		os.Exit(1)
 	}
 
 }
