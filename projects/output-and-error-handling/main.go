@@ -40,9 +40,27 @@ func handleWeatherRequest() (string, error) {
 		} else {
 			retryAfterInSecond, err := strconv.Atoi(retryAfter)
 			if err != nil {
-				fmt.Println("Retry-After header is invalid, automatically retries after 2 seconds...")
-				time.Sleep(2 * time.Second)
-				return handleWeatherRequest()
+
+				retryTime,err:= time.Parse(time.RFC1123, retryAfter);
+
+				if err!=nil{
+					fmt.Println("Retry-After header is invalid, automatically retries after 2 seconds...")
+					time.Sleep(2 * time.Second)
+					return handleWeatherRequest()
+				}
+
+				waitingDuration:=time.Until(retryTime);
+				if waitingDuration.Seconds() > 5 {
+				return "", fmt.Errorf("server response takes %.0f seconds, process canceled", waitingDuration.Seconds())
+				}else if waitingDuration.Seconds()>0{
+					fmt.Printf("Waiting for %.0f seconds...\n", waitingDuration.Seconds());
+					time.Sleep(waitingDuration);
+					return handleWeatherRequest();
+				}else{
+					fmt.Println("retrying to get the weather... please wait")
+				}
+
+				return handleWeatherRequest();
 			}
 
 			if retryAfterInSecond > 5 {
