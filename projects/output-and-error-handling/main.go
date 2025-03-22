@@ -77,7 +77,6 @@ func handleWeatherRequest() (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("couldn't read the body response: %w", err)
 		}
-		fmt.Printf("%s", body)
 		return string(body), nil
 	} else {
 		return "", fmt.Errorf("unkown status code:  %d . ", resp.StatusCode)
@@ -86,10 +85,12 @@ func handleWeatherRequest() (string, error) {
 }
 
 func main() {
-	_, err := handleWeatherRequest()
+	weather, err := handleWeatherRequest()
 	if err != nil {
 		fmt.Println("error happened: ", err)
 		os.Exit(1)
 	}
+
+	fmt.Printf("%s", weather);
 
 }
